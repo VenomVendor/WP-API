@@ -9,6 +9,8 @@ Author URI: http://VenomVendor.com
 License: Apache v2
 */
 
+require_once('config.php');
+
 function enable_date($public_vars) {
     //http://codex.wordpress.org/Class_Reference/WP_Query#Date_Parameters
     return array_merge($public_vars, array('date_query'));
@@ -49,7 +51,13 @@ function add_fields_rest_api( $data, $post, $request ) {
 function customize_fields_rest_api( $data, $post, $request ) {
     $_removed = remove_fields_rest_api( $data, $post, $request );
     $_data = add_fields_rest_api( $_removed, $post, $request );
-    return $_data;
+
+    $token = $request->get_header('token');
+
+    if(check_token($token)) {
+        return $_data;
+    }
+    return null;
 }
 
 add_filter( 'rest_prepare_post', 'customize_fields_rest_api', 10, 3 );
@@ -126,3 +134,59 @@ function custom_better_rest_api_featured_images_get_field( $object, $field_name,
 }
 
 add_action( 'init', 'custom_better_rest_api_featured_images_init', 12 );
+
+add_action( 'rest_api_init', function () {
+    register_rest_route( 'wp/v2', '/token', array(
+        'methods' => 'GET',
+        'callback' => 'get_token',
+    ) );
+} );
+
+function get_token( WP_REST_Request $request ) {
+    $api_key = $request->get_header('api_key');
+    $unique_id = $request->get_header('unique_id');
+    $is_valid = strcmp($api_key, API_KEY) == 0 && !empty($unique_id);
+
+    if($is_valid) {
+        $data = array('status' => 'success');
+    } else {
+        $data = array('status' => 'error');
+    }
+
+    $response = new WP_REST_Response( $data );
+
+   if($is_valid) {
+        $response->header( 'token',  create_token($unique_id));
+    } else {
+        $response->set_status( 401 );
+    }
+
+    return $response;
+}
+
+function create_token($unique_id) {
+//    session_start();
+    $random_string = generateRandomString();
+    $_SESSION[$unique_id] = $random_string;
+    return $random_string;
+}
+
+function generateRandomString($length = 10) {
+    return hash('sha256', RANDOM_HASH . strtotime('now'), false);
+}
+
+function check_token($token) {
+//    session_start();
+    $session_avail = true; //TODO-Change this to false.
+
+//    if(!is_null($_SESSION)) {
+//        foreach ($_SESSION as $key=>$val) {
+//            if(strcmp($token, $val) == 0) {
+//                $session_avail = true;
+//                break;
+//            }
+//        }
+//    }
+
+    return $session_avail;
+}
