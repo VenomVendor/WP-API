@@ -1158,7 +1158,7 @@ class WP_REST_Posts_Controller extends WP_REST_Controller {
 		}
 
 		if ( ! empty( $schema['properties']['date'] ) ) {
-			$data['date'] = $this->prepare_date_response( $post->post_date_gmt, $post->post_date );
+			$data['date'] = strtotime( $this->prepare_date_response( $post->post_date_gmt, $post->post_date ) );
 		}
 
 		if ( ! empty( $schema['properties']['date_gmt'] ) ) {
