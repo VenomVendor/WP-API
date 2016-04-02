@@ -253,48 +253,13 @@ class WP_REST_Posts_Controller extends WP_REST_Controller {
 			$posts[] = $this->prepare_response_for_collection( $data );
 		}
 
-		// Reset filter.
-		if ( 'edit' === $request['context'] ) {
-			remove_filter( 'post_password_required', '__return_false' );
-		}
+		$response  = rest_ensure_response($posts);
 
-		$page = (int) $query_args['paged'];
-		$total_posts = $posts_query->found_posts;
+		unset($response->status);
+		unset($response->headers);
 
-		if ( $total_posts < 1 ) {
-			// Out-of-bounds, run the query again without LIMIT for total count.
-			unset( $query_args['paged'] );
-			$count_query = new WP_Query();
-			$count_query->query( $query_args );
-			$total_posts = $count_query->found_posts;
-		}
-
-		$max_pages = ceil( $total_posts / (int) $query_args['posts_per_page'] );
-
-		$response = rest_ensure_response( $posts );
-		$response->header( 'X-WP-Total', (int) $total_posts );
-		$response->header( 'X-WP-TotalPages', (int) $max_pages );
-
-		$request_params = $request->get_query_params();
-		if ( ! empty( $request_params['filter'] ) ) {
-			// Normalize the pagination params.
-			unset( $request_params['filter']['posts_per_page'], $request_params['filter']['paged'] );
-		}
-		$base = add_query_arg( $request_params, rest_url( sprintf( '%s/%s', $this->namespace, $this->rest_base ) ) );
-
-		if ( $page > 1 ) {
-			$prev_page = $page - 1;
-			if ( $prev_page > $max_pages ) {
-				$prev_page = $max_pages;
-			}
-			$prev_link = add_query_arg( 'page', $prev_page, $base );
-			$response->link_header( 'prev', $prev_link );
-		}
-		if ( $max_pages > $page ) {
-			$next_page = $page + 1;
-			$next_link = add_query_arg( 'page', $next_page, $base );
-			$response->link_header( 'next', $next_link );
-		}
+		// add status to the response, to indicate success.
+		$response = array('status' => 'success', 'posts' => $response);
 
 		return $response;
 	}
@@ -1340,7 +1305,6 @@ class WP_REST_Posts_Controller extends WP_REST_Controller {
 		// Wrap the data in a response object.
 		$response = rest_ensure_response( $data );
 
-		$response->add_links( $this->prepare_links( $post ) );
 
 		/**
 		 * Filter the post data for a response.
