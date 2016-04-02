@@ -1,5 +1,6 @@
 === WordPress REST API (Version 2) ===
 Contributors: rmccue, rachelbaker, danielbachhuber, joehoyle
+Contributors: rmccue, rachelbaker, danielbachhuber, joehoyle, VenomVendor
 Tags: json, rest, api, rest-api
 Requires at least: 4.4
 Tested up to: 4.5
@@ -26,6 +27,7 @@ All tickets for the project are being tracked on [GitHub][]. You can also take a
 
 [docs]: http://v2.wp-api.org/
 [GitHub]: https://github.com/WP-API/WP-API
+[GitHub]: https://github.com/VenomVendor/WP-API
 [recent updates]: http://make.wp-api.org/
 
 == Installation ==
