@@ -1048,7 +1048,7 @@ class WP_REST_Posts_Controller extends WP_REST_Controller {
 		$data = array(
 			'id'           => $post->ID,
 			'date'         => strtotime($this->prepare_date_response( $post->post_date_gmt, $post->post_date )),
-			'date_gmt'     => strtotime($this->prepare_date_response( $post->post_date_gmt )),
+			'date_gmt'     => $this->prepare_date_response( $post->post_date_gmt ),
 			'guid'         => array(
 				/** This filter is documented in wp-includes/post-template.php */
 				'rendered' => apply_filters( 'get_the_guid', $post->guid ),
